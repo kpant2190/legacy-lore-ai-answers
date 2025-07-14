@@ -116,23 +116,30 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="h-full p-6">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in">
-              <div className="bg-gradient-primary p-6 rounded-full mb-6 animate-pulse-glow">
-                <Database className="w-12 h-12 text-primary-foreground" />
+              <div className="relative group mb-8">
+                <div className="absolute -inset-2 bg-gradient-to-r from-primary to-accent rounded-full blur-lg opacity-50 group-hover:opacity-70 transition-all duration-500" />
+                <div className="relative bg-gradient-to-br from-card to-background p-8 rounded-full border border-border/50 shadow-2xl backdrop-blur-sm">
+                  <Database className="w-16 h-16 text-primary" />
+                </div>
               </div>
-              <h3 className="text-2xl font-semibold mb-2">Welcome to Legacy</h3>
-              <p className="text-muted-foreground mb-6 max-w-md">
-                Start a conversation by typing a message or recording your voice. 
-                I'll search through my knowledge base to provide you with accurate answers.
+              
+              <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                Ready to Assist
+              </h3>
+              <p className="text-muted-foreground mb-8 max-w-lg leading-relaxed">
+                Start your conversation with Legacy. I'll provide intelligent responses 
+                using advanced knowledge retrieval technology.
               </p>
-              <div className="flex gap-2">
-                <Badge variant="secondary" className="bg-secondary/50">
-                  🧠 RAG-Powered
+              
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Badge variant="secondary" className="bg-secondary/30 backdrop-blur-sm border border-border/50 px-4 py-2">
+                  🧠 Advanced RAG
                 </Badge>
-                <Badge variant="secondary" className="bg-secondary/50">
+                <Badge variant="secondary" className="bg-secondary/30 backdrop-blur-sm border border-border/50 px-4 py-2">
                   🎤 Voice Enabled
                 </Badge>
-                <Badge variant="secondary" className="bg-secondary/50">
-                  📚 Knowledge Base
+                <Badge variant="secondary" className="bg-secondary/30 backdrop-blur-sm border border-border/50 px-4 py-2">
+                  📊 Enterprise Ready
                 </Badge>
               </div>
             </div>
@@ -160,28 +167,36 @@ export function ChatInterface() {
       </Card>
 
       {/* Input Section */}
-      <Card className="mt-4 p-6 bg-card/80 backdrop-blur-sm border-border">
+      <Card className="mt-4 p-6 bg-card/60 backdrop-blur-xl border-border/50 shadow-xl">
         <div className="space-y-4">
           {/* Mode Toggle */}
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-3 justify-center">
             <Badge 
               variant={inputMode === 'text' ? 'default' : 'secondary'}
-              className="cursor-pointer transition-all hover:scale-105"
+              className={`cursor-pointer transition-all duration-300 px-6 py-2 rounded-full ${
+                inputMode === 'text' 
+                  ? 'bg-gradient-primary shadow-glow' 
+                  : 'bg-secondary/50 hover:bg-secondary/70 backdrop-blur-sm'
+              }`}
               onClick={() => setInputMode('text')}
             >
               💬 Text Input
             </Badge>
             <Badge 
               variant={inputMode === 'voice' ? 'default' : 'secondary'}
-              className="cursor-pointer transition-all hover:scale-105"
+              className={`cursor-pointer transition-all duration-300 px-6 py-2 rounded-full flex items-center gap-2 ${
+                inputMode === 'voice' 
+                  ? 'bg-gradient-primary shadow-glow' 
+                  : 'bg-secondary/50 hover:bg-secondary/70 backdrop-blur-sm'
+              }`}
               onClick={() => setInputMode('voice')}
             >
-              <Mic className="w-3 h-3 mr-1" />
+              <Mic className="w-3 h-3" />
               Voice Input
             </Badge>
           </div>
 
-          <Separator />
+          <Separator className="bg-border/30" />
 
           {/* Input Controls */}
           {inputMode === 'text' ? (

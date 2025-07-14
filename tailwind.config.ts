@@ -68,7 +68,11 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-secondary': 'var(--gradient-secondary)',
 				'gradient-accent': 'var(--gradient-accent)',
-				'gradient-glow': 'var(--gradient-glow)'
+				'gradient-glow': 'var(--gradient-glow)',
+				'gradient-radial': 'radial-gradient(circle at center, var(--tw-gradient-stops))'
+			},
+			backgroundSize: {
+				'300%': '300%'
 			},
 			boxShadow: {
 				'glow': 'var(--shadow-glow)',
@@ -116,6 +120,10 @@ export default {
 				'typing': {
 					'0%': { width: '0' },
 					'100%': { width: '100%' }
+				},
+				'gradient': {
+					'0%, 100%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' }
 				}
 			},
 			animation: {
@@ -126,7 +134,8 @@ export default {
 				'scale-in': 'scale-in 0.2s ease-out',
 				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
 				'wave': 'wave 1.5s ease-in-out infinite',
-				'typing': 'typing 1.5s steps(20) infinite'
+				'typing': 'typing 1.5s steps(20) infinite',
+				'gradient': 'gradient 6s ease infinite'
 			}
 		}
 	},
