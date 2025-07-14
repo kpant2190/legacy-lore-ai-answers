@@ -10,7 +10,7 @@ export function LegacyHeader() {
       
       <div className="relative container mx-auto px-6 py-16">
         <div className="text-center">
-          <h1 className="text-7xl font-medium tracking-tight">
+          <h1 className="text-7xl font-poppins font-medium tracking-tight">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-300% animate-gradient">
               Legacy
             </span>

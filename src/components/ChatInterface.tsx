@@ -113,7 +113,7 @@ export function ChatInterface() {
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       {/* Chat Messages */}
       <Card className="flex-1 bg-card/50 backdrop-blur-sm border-border overflow-hidden">
-        <ScrollArea ref={scrollAreaRef} className="h-full p-6">
+        <div className="h-full p-6 overflow-auto scrollbar-hide">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in">
               <h3 className="text-3xl font-bold mb-8 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
@@ -156,7 +156,7 @@ export function ChatInterface() {
               )}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </Card>
 
       {/* Input Section */}
