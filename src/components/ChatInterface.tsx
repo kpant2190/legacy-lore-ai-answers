@@ -116,14 +116,7 @@ export function ChatInterface() {
         <ScrollArea ref={scrollAreaRef} className="h-full p-6">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in">
-              <div className="relative group mb-8">
-                <div className="absolute -inset-2 bg-gradient-to-r from-primary to-accent rounded-full blur-lg opacity-50 group-hover:opacity-70 transition-all duration-500" />
-                <div className="relative bg-gradient-to-br from-card to-background p-8 rounded-full border border-border/50 shadow-2xl backdrop-blur-sm">
-                  <Database className="w-16 h-16 text-primary" />
-                </div>
-              </div>
-              
-              <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+              <h3 className="text-3xl font-bold mb-8 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                 Ready to Assist
               </h3>
               <p className="text-muted-foreground mb-8 max-w-lg leading-relaxed">
