@@ -58,10 +58,10 @@ const Landing = () => {
         {/* Hero Section */}
         <div className="text-center mb-16 space-y-8">
           <div className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight animate-fade-in">
-              Share Your Story
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight animate-fade-in">
+              Share Your Legacy
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
               Let our AI interviewer guide you through capturing your memories, wisdom, and 
               experiences in a natural conversation that preserves your legacy forever.
             </p>
@@ -75,7 +75,7 @@ const Landing = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-glow transition-all duration-300">
                   <MessageSquare className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-foreground">Start Interview</h3>
+                <h3 className="text-xl font-bold mb-3 text-foreground">Start Interview</h3>
                 <p className="text-muted-foreground">
                   Begin a new conversation session with our AI interviewer
                 </p>
@@ -88,7 +88,7 @@ const Landing = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-accent/20 to-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-glow transition-all duration-300">
                   <RotateCcw className="w-10 h-10 text-accent" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-foreground">Continue Story</h3>
+                <h3 className="text-xl font-bold mb-3 text-foreground">Continue Story</h3>
                 <p className="text-muted-foreground">
                   Resume a previous session and build upon your narrative
                 </p>
@@ -101,7 +101,7 @@ const Landing = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-primary/30 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-glow transition-all duration-300">
                   <Archive className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-foreground">View Archive</h3>
+                <h3 className="text-xl font-bold mb-3 text-foreground">View Archive</h3>
                 <p className="text-muted-foreground">
                   Browse and search through your captured memories
                 </p>
@@ -113,10 +113,10 @@ const Landing = () => {
         {/* Features Section */}
         <div className="text-center mb-16 space-y-12">
           <div className="space-y-6">
-            <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight">
               Your Stories, Preserved Forever
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
               LegacyVoice AI transforms your conversations into lasting memories that 
               can be shared, searched, and cherished by future generations.
             </p>
@@ -130,8 +130,8 @@ const Landing = () => {
                 <div className="w-24 h-24 bg-gradient-to-br from-accent/20 to-accent/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-glow transition-all duration-300">
                   <Search className="w-12 h-12 text-accent" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-foreground">Searchable Archive</h3>
-                <p className="text-muted-foreground text-lg leading-relaxed">
+                <h3 className="text-xl font-bold mb-4 text-foreground">Searchable Archive</h3>
+                <p className="text-muted-foreground leading-relaxed">
                   Find any story or memory instantly with our intelligent search system powered by AI.
                 </p>
               </CardContent>
@@ -143,8 +143,8 @@ const Landing = () => {
                 <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-glow transition-all duration-300">
                   <BookOpen className="w-12 h-12 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-foreground">Memory Books</h3>
-                <p className="text-muted-foreground text-lg leading-relaxed">
+                <h3 className="text-xl font-bold mb-4 text-foreground">Memory Books</h3>
+                <p className="text-muted-foreground leading-relaxed">
                   Create beautiful, printable books from your captured conversations and stories.
                 </p>
               </CardContent>
@@ -156,8 +156,8 @@ const Landing = () => {
                 <div className="w-24 h-24 bg-gradient-to-br from-accent/30 to-primary/20 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-glow transition-all duration-300">
                   <Mic className="w-12 h-12 text-accent" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-foreground">AI Voice Companion</h3>
-                <p className="text-muted-foreground text-lg leading-relaxed">
+                <h3 className="text-xl font-bold mb-4 text-foreground">AI Voice Companion</h3>
+                <p className="text-muted-foreground leading-relaxed">
                   Future AI technology that speaks and responds just like your loved ones.
                 </p>
               </CardContent>
