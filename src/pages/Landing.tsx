@@ -58,7 +58,7 @@ const Landing = () => {
         {/* Hero Section */}
         <div className="text-center mb-16 space-y-8">
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-tight animate-fade-in">
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent leading-normal animate-fade-in px-4">
               Share Your Legacy
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
