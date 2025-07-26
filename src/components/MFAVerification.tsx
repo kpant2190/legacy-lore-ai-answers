@@ -1,0 +1,125 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Shield, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface MFAVerificationProps {
+  onSuccess: () => void;
+  onBack: () => void;
+  challengeId: string;
+}
+
+export function MFAVerification({ onSuccess, onBack, challengeId }: MFAVerificationProps) {
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const { toast } = useToast();
+
+  const verifyMFA = async () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a 6-digit verification code',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsVerifying(true);
+    
+    try {
+      const { error } = await supabase.auth.mfa.verify({
+        factorId: challengeId,
+        challengeId: challengeId,
+        code: verificationCode
+      });
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Successfully verified! Signing you in...',
+      });
+      
+      onSuccess();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to verify code. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="text-center">
+        <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+          <Shield className="w-6 h-6 text-primary" />
+        </div>
+        <CardTitle>Two-Factor Authentication</CardTitle>
+        <CardDescription>
+          Enter the 6-digit code from your authenticator app
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="verificationCode">
+            Verification Code
+          </Label>
+          <Input
+            id="verificationCode"
+            type="text"
+            inputMode="numeric"
+            placeholder="000000"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            className="text-center text-2xl tracking-widest h-14"
+            maxLength={6}
+            autoComplete="one-time-code"
+          />
+        </div>
+        
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            disabled={isVerifying}
+            className="flex-1"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <Button
+            onClick={verifyMFA}
+            disabled={verificationCode.length !== 6 || isVerifying}
+            className="flex-1"
+          >
+            {isVerifying ? 'Verifying...' : 'Verify'}
+          </Button>
+        </div>
+
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground">
+            Can't access your authenticator app?{' '}
+            <button className="text-primary hover:underline">
+              Contact support
+            </button>
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

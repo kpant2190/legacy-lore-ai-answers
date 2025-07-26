@@ -10,6 +10,7 @@ import authBackground from "@/assets/auth-background.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { MFAVerification } from "@/components/MFAVerification";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +20,8 @@ const Auth = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showMFAVerification, setShowMFAVerification] = useState(false);
+  const [mfaChallengeId, setMfaChallengeId] = useState<string>('');
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -35,17 +38,36 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Check if error is due to MFA required
+        if (error.message.includes('MFA') || error.message.includes('challenge')) {
+          // Try to get MFA challenge
+          const { data: mfaData, error: mfaError } = await supabase.auth.mfa.challenge({
+            factorId: data?.user?.factors?.[0]?.id || ''
+          });
+          
+          if (mfaError) {
+            toast({
+              title: "Error",
+              description: mfaError.message,
+              variant: "destructive",
+            });
+          } else if (mfaData) {
+            setMfaChallengeId(mfaData.id);
+            setShowMFAVerification(true);
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Success",
@@ -62,6 +84,29 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const handleMFASuccess = () => {
+    setShowMFAVerification(false);
+    navigate("/");
+  };
+
+  const handleMFABack = () => {
+    setShowMFAVerification(false);
+    setMfaChallengeId('');
+  };
+
+  // Show MFA verification if needed
+  if (showMFAVerification) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <MFAVerification
+          onSuccess={handleMFASuccess}
+          onBack={handleMFABack}
+          challengeId={mfaChallengeId}
+        />
+      </div>
+    );
+  }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -3,6 +3,7 @@ import { User } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 interface UserDropdownProps {
   user: any; // User object from Supabase auth
@@ -50,7 +51,9 @@ export function UserDropdown({ user }: UserDropdownProps) {
         <DropdownMenuItem 
           className="cursor-pointer text-foreground hover:bg-primary/10 focus:bg-primary/10"
         >
-          My Account
+          <Link to="/account" className="w-full">
+            My Account
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-border/50" />
         <DropdownMenuItem 
