@@ -42,19 +42,13 @@ const Auth = () => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Redirect authenticated users to home, but not during MFA verification
+  // Only redirect if authenticated AND no MFA state in localStorage
   useEffect(() => {
-    if (isAuthenticated && !showMFAVerification) {
+    const mfaActive = localStorage.getItem('mfa_verification_active') === 'true';
+    if (isAuthenticated && !mfaActive && !showMFAVerification) {
       navigate("/");
     }
   }, [isAuthenticated, navigate, showMFAVerification]);
-
-  // Prevent redirect during MFA verification by checking auth state
-  useEffect(() => {
-    if (showMFAVerification) {
-      console.log('MFA verification mode active, preventing redirects');
-    }
-  }, [showMFAVerification]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,22 +121,22 @@ const Auth = () => {
             localStorage.setItem('mfa_challenge_id', challengeData.id);
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // Update component state
-            console.log('About to update component state...');
-            console.log('Current showMFAVerification before setState:', showMFAVerification);
-            
+            // Force immediate state update to prevent redirect race condition
+            console.log('Forcing immediate state update...');
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
-            setShowMFAVerification(true);
             
-            console.log('State update calls made, showMFAVerification should now be true');
-            console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
-            
-            // Force immediate check
-            setTimeout(() => {
-              console.log('Timeout check - showMFAVerification:', showMFAVerification);
-              console.log('Timeout check - localStorage mfa_verification_active:', localStorage.getItem('mfa_verification_active'));
-            }, 0);
+            // Use flushSync to force immediate React state update
+            import('react-dom').then(({ flushSync }) => {
+              flushSync(() => {
+                setShowMFAVerification(true);
+              });
+              console.log('MFA verification state forced to true');
+            }).catch(() => {
+              // Fallback if flushSync import fails
+              setShowMFAVerification(true);
+              console.log('MFA verification state set (fallback)');
+            });
             
             toast({
               title: "Two-Factor Authentication Required",
