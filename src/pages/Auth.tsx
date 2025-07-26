@@ -94,9 +94,13 @@ const Auth = () => {
         const verifiedTotpFactors = mfaData?.totp?.filter(factor => factor.status === 'verified') || [];
         
         if (verifiedTotpFactors.length > 0) {
-          console.log('User has MFA enabled, creating challenge while authenticated');
+          console.log('User has MFA enabled, need to sign out and create challenge');
           
-          // Create challenge for MFA while user is still authenticated
+          // Immediately sign out the user before creating MFA challenge
+          await supabase.auth.signOut();
+          console.log('User signed out, now creating MFA challenge');
+          
+          // Create challenge for MFA while user is signed out
           const mfaFactor = verifiedTotpFactors[0];
           const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
             factorId: mfaFactor.id
@@ -114,29 +118,18 @@ const Auth = () => {
 
           if (challengeData) {
             console.log('MFA challenge created successfully:', challengeData.id);
-            console.log('Setting MFA verification state...');
             
-            // Store MFA state in localStorage to persist across re-renders
+            // Store MFA state in localStorage
             localStorage.setItem('mfa_verification_active', 'true');
             localStorage.setItem('mfa_challenge_id', challengeData.id);
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // Force immediate state update to prevent redirect race condition
-            console.log('Forcing immediate state update...');
+            // Update component state immediately
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
+            setShowMFAVerification(true);
             
-            // Use flushSync to force immediate React state update
-            import('react-dom').then(({ flushSync }) => {
-              flushSync(() => {
-                setShowMFAVerification(true);
-              });
-              console.log('MFA verification state forced to true');
-            }).catch(() => {
-              // Fallback if flushSync import fails
-              setShowMFAVerification(true);
-              console.log('MFA verification state set (fallback)');
-            });
+            console.log('MFA verification screen should now show');
             
             toast({
               title: "Two-Factor Authentication Required",
