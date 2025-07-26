@@ -22,6 +22,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showMFAVerification, setShowMFAVerification] = useState(false);
   const [mfaChallengeId, setMfaChallengeId] = useState<string>('');
+  const [mfaFactorId, setMfaFactorId] = useState<string>('');
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -38,43 +39,69 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      console.log('Attempting sign in for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        // Check if error is due to MFA required
-        if (error.message.includes('MFA') || error.message.includes('challenge')) {
-          // Try to get MFA challenge
-          const { data: mfaData, error: mfaError } = await supabase.auth.mfa.challenge({
-            factorId: data?.user?.factors?.[0]?.id || ''
-          });
-          
-          if (mfaError) {
-            toast({
-              title: "Error",
-              description: mfaError.message,
-              variant: "destructive",
-            });
-          } else if (mfaData) {
-            setMfaChallengeId(mfaData.id);
-            setShowMFAVerification(true);
-          }
-        } else {
+        console.log('Sign in error:', error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else if (data.user) {
+        // Check if user has MFA factors
+        console.log('Sign in successful, checking for MFA factors...');
+        
+        const { data: mfaData, error: mfaError } = await supabase.auth.mfa.listFactors();
+        console.log('MFA factors:', mfaData);
+        
+        if (mfaError) {
+          console.error('Error listing MFA factors:', mfaError);
           toast({
             title: "Error",
-            description: error.message,
+            description: "Failed to check authentication requirements",
             variant: "destructive",
           });
+        } else if (mfaData?.totp && mfaData.totp.length > 0) {
+          // User has MFA enabled, create challenge
+          const mfaFactor = mfaData.totp.find(factor => factor.status === 'verified');
+          if (mfaFactor) {
+            console.log('MFA required, creating challenge for factor:', mfaFactor.id);
+            
+            const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+              factorId: mfaFactor.id
+            });
+            
+            if (challengeError) {
+              console.error('Error creating MFA challenge:', challengeError);
+              toast({
+                title: "Error",
+                description: challengeError.message,
+                variant: "destructive",
+              });
+            } else if (challengeData) {
+              console.log('MFA challenge created:', challengeData.id);
+              setMfaChallengeId(challengeData.id);
+              setMfaFactorId(mfaFactor.id);
+              setShowMFAVerification(true);
+            }
+          }
+        } else {
+          // No MFA required, sign in successful
+          console.log('No MFA required, sign in complete');
+          toast({
+            title: "Success",
+            description: "Signed in successfully!",
+          });
         }
-      } else {
-        toast({
-          title: "Success",
-          description: "Signed in successfully!",
-        });
       }
     } catch (error) {
+      console.error('Unexpected sign in error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -93,6 +120,7 @@ const Auth = () => {
   const handleMFABack = () => {
     setShowMFAVerification(false);
     setMfaChallengeId('');
+    setMfaFactorId('');
   };
 
   // Show MFA verification if needed
@@ -103,6 +131,7 @@ const Auth = () => {
           onSuccess={handleMFASuccess}
           onBack={handleMFABack}
           challengeId={mfaChallengeId}
+          factorId={mfaFactorId}
         />
       </div>
     );

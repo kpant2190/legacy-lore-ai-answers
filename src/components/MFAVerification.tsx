@@ -11,9 +11,10 @@ interface MFAVerificationProps {
   onSuccess: () => void;
   onBack: () => void;
   challengeId: string;
+  factorId: string;
 }
 
-export function MFAVerification({ onSuccess, onBack, challengeId }: MFAVerificationProps) {
+export function MFAVerification({ onSuccess, onBack, challengeId, factorId }: MFAVerificationProps) {
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
@@ -31,13 +32,16 @@ export function MFAVerification({ onSuccess, onBack, challengeId }: MFAVerificat
     setIsVerifying(true);
     
     try {
+      console.log('Verifying MFA with challenge ID:', challengeId, 'and code:', verificationCode);
+      
       const { error } = await supabase.auth.mfa.verify({
-        factorId: challengeId,
+        factorId: factorId,
         challengeId: challengeId,
         code: verificationCode
       });
 
       if (error) {
+        console.error('MFA verification error:', error);
         toast({
           title: 'Error',
           description: error.message,
@@ -46,6 +50,7 @@ export function MFAVerification({ onSuccess, onBack, challengeId }: MFAVerificat
         return;
       }
 
+      console.log('MFA verification successful');
       toast({
         title: 'Success',
         description: 'Successfully verified! Signing you in...',

@@ -15,6 +15,7 @@ interface MFASetupProps {
 export function MFASetup({ onComplete, onCancel }: MFASetupProps) {
   const [qrCode, setQrCode] = useState<string>('');
   const [secret, setSecret] = useState<string>('');
+  const [factorId, setFactorId] = useState<string>('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -42,6 +43,8 @@ export function MFASetup({ onComplete, onCancel }: MFASetupProps) {
       if (data) {
         setQrCode(data.totp.qr_code);
         setSecret(data.totp.secret);
+        setFactorId(data.id);
+        console.log('MFA enrollment successful, factor ID:', data.id);
       }
     } catch (error) {
       toast({
@@ -65,8 +68,27 @@ export function MFASetup({ onComplete, onCancel }: MFASetupProps) {
     setIsEnrolling(true);
     
     try {
-      const { data, error } = await supabase.auth.mfa.challengeAndVerify({
-        factorId: qrCode.split('?')[1]?.split('&')[0]?.split('=')[1] || '',
+      console.log('Verifying MFA with factor ID:', factorId, 'and code:', verificationCode);
+      
+      // For MFA setup, we need to create a challenge first, then verify
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: factorId
+      });
+
+      if (challengeError) {
+        console.error('Challenge creation error:', challengeError);
+        toast({
+          title: 'Error',
+          description: challengeError.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Now verify the challenge with the code
+      const { error } = await supabase.auth.mfa.verify({
+        factorId: factorId,
+        challengeId: challengeData.id,
         code: verificationCode
       });
 
