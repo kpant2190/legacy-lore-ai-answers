@@ -52,26 +52,20 @@ export function MFAVerification({ onSuccess, onBack, challengeId, factorId }: MF
         return;
       }
 
-      console.log('MFA verification successful - user should now be authenticated');
-      
-      // After successful MFA verification, the user should be automatically signed in
-      // We can verify this by checking the session
-      const { data: session } = await supabase.auth.getSession();
-      console.log('Session after MFA verification:', session);
+      console.log('MFA verification successful!');
       
       toast({
         title: 'Success',
         description: 'Two-factor authentication successful!',
       });
       
-      // Small delay to ensure session is properly set
-      setTimeout(() => {
-        onSuccess();
-      }, 500);
+      // Call onSuccess immediately - the session should be established
+      onSuccess();
     } catch (error) {
+      console.error('MFA verification failed:', error);
       toast({
         title: 'Error',
-        description: 'Failed to verify code. Please try again.',
+        description: 'Invalid verification code. Please try again.',
         variant: 'destructive',
       });
     } finally {

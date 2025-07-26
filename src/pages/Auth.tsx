@@ -42,10 +42,10 @@ const Auth = () => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Only redirect if authenticated AND no MFA state in localStorage
+  // Only redirect if authenticated AND no MFA verification is active
   useEffect(() => {
-    const mfaActive = localStorage.getItem('mfa_verification_active') === 'true';
-    if (isAuthenticated && !mfaActive && !showMFAVerification) {
+    // Don't redirect if MFA verification is in progress
+    if (isAuthenticated && !showMFAVerification && localStorage.getItem('mfa_verification_active') !== 'true') {
       navigate("/");
     }
   }, [isAuthenticated, navigate, showMFAVerification]);
@@ -124,17 +124,21 @@ const Auth = () => {
             localStorage.setItem('mfa_challenge_id', challengeData.id);
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // Update component state immediately
+            // Update component state immediately with force update
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
             setShowMFAVerification(true);
             
-            console.log('MFA verification screen should now show');
+            // Force immediate re-render to show MFA screen
+            console.log('MFA verification screen should now show immediately');
             
             toast({
               title: "Two-Factor Authentication Required",
               description: "Please enter your authenticator code to continue",
             });
+            
+            // Prevent any further processing that might interfere
+            return;
           }
         } else {
           // No MFA configured - sign in is complete
