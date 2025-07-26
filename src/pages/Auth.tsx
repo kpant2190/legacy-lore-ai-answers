@@ -41,6 +41,7 @@ const Auth = () => {
     try {
       console.log('Attempting sign in for:', email);
       
+      // First, try to sign in normally
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -53,46 +54,64 @@ const Auth = () => {
           description: error.message,
           variant: "destructive",
         });
-      } else if (data.user) {
-        // Check if user has MFA factors
-        console.log('Sign in successful, checking for MFA factors...');
+        return;
+      }
+
+      if (data.user) {
+        console.log('Initial sign in successful, user ID:', data.user.id);
         
+        // Now check if this user has MFA enabled
         const { data: mfaData, error: mfaError } = await supabase.auth.mfa.listFactors();
-        console.log('MFA factors:', mfaData);
+        console.log('Checking MFA factors:', mfaData);
         
         if (mfaError) {
-          console.error('Error listing MFA factors:', mfaError);
+          console.error('Error checking MFA factors:', mfaError);
           toast({
             title: "Error",
-            description: "Failed to check authentication requirements",
+            description: "Failed to check security settings",
             variant: "destructive",
           });
-        } else if (mfaData?.totp && mfaData.totp.length > 0) {
-          // User has MFA enabled, create challenge
-          const mfaFactor = mfaData.totp.find(factor => factor.status === 'verified');
-          if (mfaFactor) {
-            console.log('MFA required, creating challenge for factor:', mfaFactor.id);
-            
-            const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
-              factorId: mfaFactor.id
+          return;
+        }
+
+        // Check if user has verified TOTP factors
+        const verifiedTotpFactors = mfaData?.totp?.filter(factor => factor.status === 'verified') || [];
+        
+        if (verifiedTotpFactors.length > 0) {
+          console.log('User has MFA enabled, requiring additional verification');
+          
+          // User has MFA - sign them out and require MFA verification
+          await supabase.auth.signOut();
+          
+          // Create challenge for MFA
+          const mfaFactor = verifiedTotpFactors[0];
+          const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+            factorId: mfaFactor.id
+          });
+          
+          if (challengeError) {
+            console.error('Error creating MFA challenge:', challengeError);
+            toast({
+              title: "Error",
+              description: "Failed to initiate two-factor authentication",
+              variant: "destructive",
             });
+            return;
+          }
+
+          if (challengeData) {
+            console.log('MFA challenge created successfully:', challengeData.id);
+            setMfaChallengeId(challengeData.id);
+            setMfaFactorId(mfaFactor.id);
+            setShowMFAVerification(true);
             
-            if (challengeError) {
-              console.error('Error creating MFA challenge:', challengeError);
-              toast({
-                title: "Error",
-                description: challengeError.message,
-                variant: "destructive",
-              });
-            } else if (challengeData) {
-              console.log('MFA challenge created:', challengeData.id);
-              setMfaChallengeId(challengeData.id);
-              setMfaFactorId(mfaFactor.id);
-              setShowMFAVerification(true);
-            }
+            toast({
+              title: "Two-Factor Authentication Required",
+              description: "Please enter your authenticator code to continue",
+            });
           }
         } else {
-          // No MFA required, sign in successful
+          // No MFA configured - sign in is complete
           console.log('No MFA required, sign in complete');
           toast({
             title: "Success",
@@ -104,7 +123,7 @@ const Auth = () => {
       console.error('Unexpected sign in error:', error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred during sign in",
         variant: "destructive",
       });
     } finally {
