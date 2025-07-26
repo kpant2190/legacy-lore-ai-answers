@@ -42,10 +42,12 @@ const Auth = () => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Only redirect if authenticated AND no MFA verification is active
+  // Prevent redirect when MFA verification is needed
   useEffect(() => {
-    // Don't redirect if MFA verification is in progress
-    if (isAuthenticated && !showMFAVerification && localStorage.getItem('mfa_verification_active') !== 'true') {
+    // Never redirect if MFA verification is active or required
+    const mfaActive = localStorage.getItem('mfa_verification_active') === 'true' || showMFAVerification;
+    
+    if (isAuthenticated && !mfaActive) {
       navigate("/");
     }
   }, [isAuthenticated, navigate, showMFAVerification]);
@@ -120,19 +122,27 @@ const Auth = () => {
             localStorage.setItem('mfa_challenge_id', challengeData.id);
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // Update component state to show MFA verification
+            // Update component state to show MFA verification IMMEDIATELY
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
             setShowMFAVerification(true);
             
-            console.log('MFA verification screen should now show');
+            console.log('MFA verification screen should now show immediately');
+            
+            // Force a re-render by using a timeout to ensure state is processed
+            setTimeout(() => {
+              if (!showMFAVerification) {
+                console.log('Forcing MFA verification to show');
+                setShowMFAVerification(true);
+              }
+            }, 100);
             
             toast({
               title: "Two-Factor Authentication Required",
               description: "Please enter your authenticator code to complete sign in",
             });
             
-            // Prevent any further processing
+            // Stop all further processing
             return;
           }
         } else {
