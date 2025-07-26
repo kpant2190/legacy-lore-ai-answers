@@ -78,12 +78,9 @@ const Auth = () => {
         const verifiedTotpFactors = mfaData?.totp?.filter(factor => factor.status === 'verified') || [];
         
         if (verifiedTotpFactors.length > 0) {
-          console.log('User has MFA enabled, requiring additional verification');
+          console.log('User has MFA enabled, creating challenge while authenticated');
           
-          // User has MFA - sign them out and require MFA verification
-          await supabase.auth.signOut();
-          
-          // Create challenge for MFA
+          // Create challenge for MFA while user is still authenticated
           const mfaFactor = verifiedTotpFactors[0];
           const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
             factorId: mfaFactor.id
@@ -101,6 +98,11 @@ const Auth = () => {
 
           if (challengeData) {
             console.log('MFA challenge created successfully:', challengeData.id);
+            
+            // Now sign the user out after creating the challenge
+            await supabase.auth.signOut();
+            console.log('User signed out, showing MFA verification');
+            
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
             setShowMFAVerification(true);
