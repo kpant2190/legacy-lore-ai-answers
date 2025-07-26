@@ -23,6 +23,7 @@ const Auth = () => {
   const [showMFAVerification, setShowMFAVerification] = useState(false);
   const [mfaChallengeId, setMfaChallengeId] = useState<string>('');
   const [mfaFactorId, setMfaFactorId] = useState<string>('');
+  const [mfaInitialized, setMfaInitialized] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -107,20 +108,24 @@ const Auth = () => {
             console.log('MFA challenge created successfully:', challengeData.id);
             console.log('Setting MFA verification state...');
             
-            // Set MFA state BEFORE signing out to ensure it persists
+            // Use a flag to prevent state resets during re-renders
+            setMfaInitialized(true);
+            
+            // Set MFA state and force immediate re-render
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
-            setShowMFAVerification(true);
             
-            console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
-            
-            // Don't sign out immediately - let MFA verification handle the auth state
-            console.log('MFA verification should now be visible');
-            
-            toast({
-              title: "Two-Factor Authentication Required",
-              description: "Please enter your authenticator code to continue",
-            });
+            // Use setTimeout to ensure state is set before showing MFA screen
+            setTimeout(() => {
+              setShowMFAVerification(true);
+              console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
+              console.log('MFA verification should now be visible');
+              
+              toast({
+                title: "Two-Factor Authentication Required",
+                description: "Please enter your authenticator code to continue",
+              });
+            }, 100);
           }
         } else {
           // No MFA configured - sign in is complete
