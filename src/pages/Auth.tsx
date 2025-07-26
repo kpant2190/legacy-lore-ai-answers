@@ -27,12 +27,12 @@ const Auth = () => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Redirect authenticated users to home
+  // Redirect authenticated users to home, but not during MFA verification
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !showMFAVerification) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, showMFAVerification]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
