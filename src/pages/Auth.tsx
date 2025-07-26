@@ -1,16 +1,110 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Eye, EyeOff, ArrowLeft, Mic } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import authBackground from "@/assets/auth-background.jpg";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+
+  // Redirect authenticated users to home
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Signed in successfully!",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: `${firstName} ${lastName}`.trim()
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Account created! Please check your email to verify your account.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -101,7 +195,7 @@ const Auth = () => {
               </p>
             </div>
 
-            <div className="space-y-4">
+            <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
               {isSignUp && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -110,6 +204,10 @@ const Auth = () => {
                       id="firstName"
                       placeholder="Enter first name"
                       className="h-12"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required={isSignUp}
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -118,6 +216,10 @@ const Auth = () => {
                       id="lastName"
                       placeholder="Enter last name"
                       className="h-12"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required={isSignUp}
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -130,6 +232,10 @@ const Auth = () => {
                   type="email" 
                   placeholder="Enter your email"
                   className="h-12"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
                 />
               </div>
               
@@ -139,8 +245,13 @@ const Auth = () => {
                   <Input 
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={isSignUp ? "Enter your password (min 6 characters)" : "Enter your password"}
                     className="h-12 pr-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    disabled={loading}
                   />
                   <button
                     type="button"
@@ -178,12 +289,20 @@ const Auth = () => {
                   </Link>
                 </div>
               )}
-            </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-gradient-primary text-white hover:opacity-90 transition-opacity shadow-glow"
+                disabled={loading}
+              >
+                {loading 
+                  ? (isSignUp ? "Creating account..." : "Signing in...") 
+                  : (isSignUp ? "Create account" : "Sign in")
+                }
+              </Button>
+            </form>
             
             <div className="space-y-4">
-              <Button className="w-full h-12 bg-gradient-primary text-white hover:opacity-90 transition-opacity shadow-glow">
-                {isSignUp ? "Create account" : "Sign in"}
-              </Button>
               
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">

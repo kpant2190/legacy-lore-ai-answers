@@ -2,8 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageSquare, RotateCcw, Archive, Search, BookOpen, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { UserDropdown } from "@/components/UserDropdown";
 
 const Landing = () => {
+  const { user, loading, isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95 relative overflow-hidden">
       {/* Futuristic background effects */}
@@ -41,14 +45,19 @@ const Landing = () => {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <Link to="/auth">
-              <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
-                Sign In
-              </Button>
-            </Link>
-            <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center border border-primary/20">
-              <span className="text-lg">👤</span>
-            </div>
+            {!loading && (
+              <>
+                {!isAuthenticated ? (
+                  <Link to="/auth">
+                    <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
+                      Sign In
+                    </Button>
+                  </Link>
+                ) : (
+                  <UserDropdown user={user} />
+                )}
+              </>
+            )}
           </div>
         </div>
       </header>
