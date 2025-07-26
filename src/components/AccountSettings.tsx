@@ -65,31 +65,22 @@ export function AccountSettings() {
 
   const handleDeleteAccount = async () => {
     try {
-      // Delete the user account
-      const { error } = await supabase.auth.admin.deleteUser(user?.id || '');
+      // For now, we'll just sign out the user and show a message
+      // In a production app, you'd want to create an edge function for account deletion
+      await supabase.auth.signOut();
       
-      if (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete account. Please try again.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
       toast({
-        title: 'Account Deleted',
-        description: 'Your account has been permanently deleted.',
+        title: 'Account Deletion Requested',
+        description: 'You have been signed out. Please contact support to complete account deletion.',
       });
 
-      // Sign out and redirect to home
-      await supabase.auth.signOut();
+      // Navigate to home after sign out
       navigate('/');
     } catch (error) {
-      console.error('Delete account error:', error);
+      console.error('Sign out error:', error);
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred while deleting your account.',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
     }
