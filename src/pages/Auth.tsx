@@ -94,13 +94,9 @@ const Auth = () => {
         const verifiedTotpFactors = mfaData?.totp?.filter(factor => factor.status === 'verified') || [];
         
         if (verifiedTotpFactors.length > 0) {
-          console.log('User has MFA enabled, need to sign out and create challenge');
+          console.log('User has MFA enabled, creating challenge first');
           
-          // Immediately sign out the user before creating MFA challenge
-          await supabase.auth.signOut();
-          console.log('User signed out, now creating MFA challenge');
-          
-          // Create challenge for MFA while user is signed out
+          // Create challenge for MFA while user is still authenticated
           const mfaFactor = verifiedTotpFactors[0];
           const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
             factorId: mfaFactor.id
@@ -117,7 +113,11 @@ const Auth = () => {
           }
 
           if (challengeData) {
-            console.log('MFA challenge created successfully:', challengeData.id);
+            console.log('MFA challenge created successfully, now signing out user');
+            
+            // NOW sign out the user after creating the challenge
+            await supabase.auth.signOut();
+            console.log('User signed out, showing MFA verification');
             
             // Store MFA state in localStorage
             localStorage.setItem('mfa_verification_active', 'true');
