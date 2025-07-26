@@ -20,10 +20,18 @@ const Auth = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showMFAVerification, setShowMFAVerification] = useState(false);
-  const [mfaChallengeId, setMfaChallengeId] = useState<string>('');
-  const [mfaFactorId, setMfaFactorId] = useState<string>('');
-  const [mfaInitialized, setMfaInitialized] = useState(false);
+  
+  // Check localStorage for MFA state on component mount
+  const [showMFAVerification, setShowMFAVerification] = useState(() => {
+    return localStorage.getItem('mfa_verification_active') === 'true';
+  });
+  const [mfaChallengeId, setMfaChallengeId] = useState(() => {
+    return localStorage.getItem('mfa_challenge_id') || '';
+  });
+  const [mfaFactorId, setMfaFactorId] = useState(() => {
+    return localStorage.getItem('mfa_factor_id') || '';
+  });
+  
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -108,24 +116,22 @@ const Auth = () => {
             console.log('MFA challenge created successfully:', challengeData.id);
             console.log('Setting MFA verification state...');
             
-            // Use a flag to prevent state resets during re-renders
-            setMfaInitialized(true);
+            // Store MFA state in localStorage to persist across re-renders
+            localStorage.setItem('mfa_verification_active', 'true');
+            localStorage.setItem('mfa_challenge_id', challengeData.id);
+            localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // Set MFA state and force immediate re-render
+            // Update component state
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
+            setShowMFAVerification(true);
             
-            // Use setTimeout to ensure state is set before showing MFA screen
-            setTimeout(() => {
-              setShowMFAVerification(true);
-              console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
-              console.log('MFA verification should now be visible');
-              
-              toast({
-                title: "Two-Factor Authentication Required",
-                description: "Please enter your authenticator code to continue",
-              });
-            }, 100);
+            console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
+            
+            toast({
+              title: "Two-Factor Authentication Required",
+              description: "Please enter your authenticator code to continue",
+            });
           }
         } else {
           // No MFA configured - sign in is complete
@@ -149,11 +155,21 @@ const Auth = () => {
   };
 
   const handleMFASuccess = () => {
+    // Clear MFA state from localStorage
+    localStorage.removeItem('mfa_verification_active');
+    localStorage.removeItem('mfa_challenge_id');
+    localStorage.removeItem('mfa_factor_id');
+    
     setShowMFAVerification(false);
     navigate("/");
   };
 
   const handleMFABack = () => {
+    // Clear MFA state from localStorage
+    localStorage.removeItem('mfa_verification_active');
+    localStorage.removeItem('mfa_challenge_id');
+    localStorage.removeItem('mfa_factor_id');
+    
     setShowMFAVerification(false);
     setMfaChallengeId('');
     setMfaFactorId('');
