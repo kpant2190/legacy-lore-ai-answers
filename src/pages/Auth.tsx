@@ -42,13 +42,17 @@ const Auth = () => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Prevent redirect when MFA verification is needed
+  // Block ALL redirects when MFA verification is active
   useEffect(() => {
-    // Never redirect if MFA verification is active or required
-    const mfaActive = localStorage.getItem('mfa_verification_active') === 'true' || showMFAVerification;
+    const mfaActive = localStorage.getItem('mfa_verification_active') === 'true';
+    console.log('Redirect check - isAuthenticated:', isAuthenticated, 'showMFAVerification:', showMFAVerification, 'mfaActive:', mfaActive);
     
-    if (isAuthenticated && !mfaActive) {
+    // Only redirect if authenticated AND no MFA is active AND component doesn't show MFA
+    if (isAuthenticated && !mfaActive && !showMFAVerification) {
+      console.log('Redirecting to home - no MFA needed');
       navigate("/");
+    } else if (isAuthenticated && (mfaActive || showMFAVerification)) {
+      console.log('Blocking redirect - MFA verification needed');
     }
   }, [isAuthenticated, navigate, showMFAVerification]);
 
@@ -122,20 +126,22 @@ const Auth = () => {
             localStorage.setItem('mfa_challenge_id', challengeData.id);
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // Update component state to show MFA verification IMMEDIATELY
+            // CRITICAL: Set state SYNCHRONOUSLY before any async operations
+            console.log('FORCING MFA state to true IMMEDIATELY');
+            setShowMFAVerification(true);
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
-            setShowMFAVerification(true);
             
-            console.log('MFA verification screen should now show immediately');
+            console.log('State set. showMFAVerification should be true now');
             
-            // Force a re-render by using a timeout to ensure state is processed
-            setTimeout(() => {
+            // Double-check with immediate callback
+            requestAnimationFrame(() => {
+              console.log('Animation frame - showMFAVerification:', showMFAVerification);
               if (!showMFAVerification) {
-                console.log('Forcing MFA verification to show');
+                console.error('MFA state was not set! Force setting again');
                 setShowMFAVerification(true);
               }
-            }, 100);
+            });
             
             toast({
               title: "Two-Factor Authentication Required",
