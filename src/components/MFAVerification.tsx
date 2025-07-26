@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,18 @@ export function MFAVerification({ onSuccess, onBack, challengeId, factorId }: MF
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
+
+  // Sign out the user when MFA verification component mounts
+  // This ensures they're not authenticated while entering MFA code
+  useEffect(() => {
+    const signOutForMFA = async () => {
+      console.log('MFA Verification mounted, signing out user for MFA challenge');
+      await supabase.auth.signOut();
+      console.log('User signed out, ready for MFA verification');
+    };
+    
+    signOutForMFA();
+  }, []);
 
   const verifyMFA = async () => {
     if (!verificationCode || verificationCode.length !== 6) {

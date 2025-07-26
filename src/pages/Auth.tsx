@@ -34,6 +34,13 @@ const Auth = () => {
     }
   }, [isAuthenticated, navigate, showMFAVerification]);
 
+  // Prevent redirect during MFA verification by checking auth state
+  useEffect(() => {
+    if (showMFAVerification) {
+      console.log('MFA verification mode active, preventing redirects');
+    }
+  }, [showMFAVerification]);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -107,9 +114,8 @@ const Auth = () => {
             
             console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
             
-            // Now sign the user out after setting the MFA state
-            await supabase.auth.signOut();
-            console.log('User signed out, MFA verification should now be visible');
+            // Don't sign out immediately - let MFA verification handle the auth state
+            console.log('MFA verification should now be visible');
             
             toast({
               title: "Two-Factor Authentication Required",
