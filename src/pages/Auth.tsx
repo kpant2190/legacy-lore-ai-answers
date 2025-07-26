@@ -23,13 +23,19 @@ const Auth = () => {
   
   // Check localStorage for MFA state on component mount
   const [showMFAVerification, setShowMFAVerification] = useState(() => {
-    return localStorage.getItem('mfa_verification_active') === 'true';
+    const stored = localStorage.getItem('mfa_verification_active') === 'true';
+    console.log('Auth component initializing, MFA verification from localStorage:', stored);
+    return stored;
   });
   const [mfaChallengeId, setMfaChallengeId] = useState(() => {
-    return localStorage.getItem('mfa_challenge_id') || '';
+    const stored = localStorage.getItem('mfa_challenge_id') || '';
+    console.log('Auth component initializing, challenge ID from localStorage:', stored);
+    return stored;
   });
   const [mfaFactorId, setMfaFactorId] = useState(() => {
-    return localStorage.getItem('mfa_factor_id') || '';
+    const stored = localStorage.getItem('mfa_factor_id') || '';
+    console.log('Auth component initializing, factor ID from localStorage:', stored);
+    return stored;
   });
   
   const navigate = useNavigate();
@@ -122,11 +128,21 @@ const Auth = () => {
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
             // Update component state
+            console.log('About to update component state...');
+            console.log('Current showMFAVerification before setState:', showMFAVerification);
+            
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
             setShowMFAVerification(true);
             
+            console.log('State update calls made, showMFAVerification should now be true');
             console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
+            
+            // Force immediate check
+            setTimeout(() => {
+              console.log('Timeout check - showMFAVerification:', showMFAVerification);
+              console.log('Timeout check - localStorage mfa_verification_active:', localStorage.getItem('mfa_verification_active'));
+            }, 0);
             
             toast({
               title: "Two-Factor Authentication Required",
