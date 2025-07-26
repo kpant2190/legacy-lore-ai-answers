@@ -98,14 +98,18 @@ const Auth = () => {
 
           if (challengeData) {
             console.log('MFA challenge created successfully:', challengeData.id);
+            console.log('Setting MFA verification state...');
             
-            // Now sign the user out after creating the challenge
-            await supabase.auth.signOut();
-            console.log('User signed out, showing MFA verification');
-            
+            // Set MFA state BEFORE signing out to ensure it persists
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
             setShowMFAVerification(true);
+            
+            console.log('MFA state set, challenge ID:', challengeData.id, 'factor ID:', mfaFactor.id);
+            
+            // Now sign the user out after setting the MFA state
+            await supabase.auth.signOut();
+            console.log('User signed out, MFA verification should now be visible');
             
             toast({
               title: "Two-Factor Authentication Required",
@@ -145,7 +149,10 @@ const Auth = () => {
   };
 
   // Show MFA verification if needed
+  console.log('Rendering Auth component. showMFAVerification:', showMFAVerification, 'challengeId:', mfaChallengeId, 'factorId:', mfaFactorId);
+  
   if (showMFAVerification) {
+    console.log('Rendering MFA verification screen');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <MFAVerification
@@ -157,6 +164,8 @@ const Auth = () => {
       </div>
     );
   }
+
+  console.log('Rendering normal auth form');
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
