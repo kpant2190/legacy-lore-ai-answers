@@ -94,9 +94,9 @@ const Auth = () => {
         const verifiedTotpFactors = mfaData?.totp?.filter(factor => factor.status === 'verified') || [];
         
         if (verifiedTotpFactors.length > 0) {
-          console.log('User has MFA enabled, creating challenge first');
+          console.log('User has MFA enabled, creating challenge');
           
-          // Create challenge for MFA while user is still authenticated
+          // Create challenge for MFA while user is authenticated
           const mfaFactor = verifiedTotpFactors[0];
           const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
             factorId: mfaFactor.id
@@ -113,31 +113,26 @@ const Auth = () => {
           }
 
           if (challengeData) {
-            console.log('MFA challenge created successfully, now signing out user');
+            console.log('MFA challenge created successfully');
             
-            // NOW sign out the user after creating the challenge
-            await supabase.auth.signOut();
-            console.log('User signed out, showing MFA verification');
-            
-            // Store MFA state in localStorage
+            // Store MFA state in localStorage but DON'T sign out the user
             localStorage.setItem('mfa_verification_active', 'true');
             localStorage.setItem('mfa_challenge_id', challengeData.id);
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // Update component state immediately with force update
+            // Update component state to show MFA verification
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
             setShowMFAVerification(true);
             
-            // Force immediate re-render to show MFA screen
-            console.log('MFA verification screen should now show immediately');
+            console.log('MFA verification screen should now show');
             
             toast({
               title: "Two-Factor Authentication Required",
-              description: "Please enter your authenticator code to continue",
+              description: "Please enter your authenticator code to complete sign in",
             });
             
-            // Prevent any further processing that might interfere
+            // Prevent any further processing
             return;
           }
         } else {
