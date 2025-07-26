@@ -71,7 +71,7 @@ export function AccountSettings() {
       
       toast({
         title: 'Account Deletion Requested',
-        description: 'You have been signed out. Please contact support to complete account deletion.',
+        description: 'You have been signed out.',
       });
 
       // Navigate to home after sign out
@@ -181,24 +181,24 @@ export function AccountSettings() {
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
-      <Card className="border-destructive/20">
+      {/* Account Management */}
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-destructive">
+          <CardTitle className="flex items-center space-x-2">
             <UserX className="w-5 h-5" />
-            <span>Danger Zone</span>
+            <span>Account Management</span>
           </CardTitle>
           <CardDescription>
-            Permanently delete your account and all associated data
+            Delete your account if you no longer need it
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+          <div className="p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-destructive">Delete Account</h3>
+                <h3 className="font-medium">Delete Account</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  This action cannot be undone. All your data will be permanently deleted.
+                  Remove your account and all associated data.
                 </p>
               </div>
               <AlertDialog>
