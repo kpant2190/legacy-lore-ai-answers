@@ -63,6 +63,9 @@ const Auth = () => {
     try {
       console.log('Attempting sign in for:', email);
       
+      // Set MFA checking state to prevent redirects
+      localStorage.setItem('mfa_verification_active', 'true');
+      
       // First, try to sign in normally
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -71,6 +74,8 @@ const Auth = () => {
 
       if (error) {
         console.log('Sign in error:', error);
+        // Clear MFA state on error
+        localStorage.removeItem('mfa_verification_active');
         toast({
           title: "Error",
           description: error.message,
@@ -88,6 +93,7 @@ const Auth = () => {
         
         if (mfaError) {
           console.error('Error checking MFA factors:', mfaError);
+          localStorage.removeItem('mfa_verification_active');
           toast({
             title: "Error",
             description: "Failed to check security settings",
@@ -110,6 +116,7 @@ const Auth = () => {
           
           if (challengeError) {
             console.error('Error creating MFA challenge:', challengeError);
+            localStorage.removeItem('mfa_verification_active');
             toast({
               title: "Error",
               description: "Failed to initiate two-factor authentication",
@@ -121,27 +128,14 @@ const Auth = () => {
           if (challengeData) {
             console.log('MFA challenge created successfully');
             
-            // Store MFA state in localStorage but DON'T sign out the user
-            localStorage.setItem('mfa_verification_active', 'true');
+            // Store MFA state in localStorage
             localStorage.setItem('mfa_challenge_id', challengeData.id);
             localStorage.setItem('mfa_factor_id', mfaFactor.id);
             
-            // CRITICAL: Set state SYNCHRONOUSLY before any async operations
-            console.log('FORCING MFA state to true IMMEDIATELY');
+            // Set component state immediately
             setShowMFAVerification(true);
             setMfaChallengeId(challengeData.id);
             setMfaFactorId(mfaFactor.id);
-            
-            console.log('State set. showMFAVerification should be true now');
-            
-            // Double-check with immediate callback
-            requestAnimationFrame(() => {
-              console.log('Animation frame - showMFAVerification:', showMFAVerification);
-              if (!showMFAVerification) {
-                console.error('MFA state was not set! Force setting again');
-                setShowMFAVerification(true);
-              }
-            });
             
             toast({
               title: "Two-Factor Authentication Required",
@@ -152,8 +146,9 @@ const Auth = () => {
             return;
           }
         } else {
-          // No MFA configured - sign in is complete
+          // No MFA configured - clear the checking state and allow normal sign in
           console.log('No MFA required, sign in complete');
+          localStorage.removeItem('mfa_verification_active');
           toast({
             title: "Success",
             description: "Signed in successfully!",
@@ -162,6 +157,7 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Unexpected sign in error:', error);
+      localStorage.removeItem('mfa_verification_active');
       toast({
         title: "Error",
         description: "An unexpected error occurred during sign in",
