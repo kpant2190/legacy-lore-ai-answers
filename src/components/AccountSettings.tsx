@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, ShieldCheck, Settings, Trash2 } from 'lucide-react';
+import { Shield, ShieldCheck, Settings, Trash2, UserX } from 'lucide-react';
 import { MFASetup } from './MFASetup';
 import { useMFA } from '@/hooks/useMFA';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +25,8 @@ export function AccountSettings() {
   const [showMFASetup, setShowMFASetup] = useState(false);
   const { hasMFA, mfaFactors, disableMFA, checkMFAStatus } = useMFA();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleEnableMFA = () => {
     setShowMFASetup(true);
@@ -55,6 +60,38 @@ export function AccountSettings() {
           variant: 'destructive',
         });
       }
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      // Delete the user account
+      const { error } = await supabase.auth.admin.deleteUser(user?.id || '');
+      
+      if (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete account. Please try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Account Deleted',
+        description: 'Your account has been permanently deleted.',
+      });
+
+      // Sign out and redirect to home
+      await supabase.auth.signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred while deleting your account.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -148,6 +185,64 @@ export function AccountSettings() {
                   Enable 2FA
                 </Button>
               )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="border-destructive/20">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-destructive">
+            <UserX className="w-5 h-5" />
+            <span>Danger Zone</span>
+          </CardTitle>
+          <CardDescription>
+            Permanently delete your account and all associated data
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-destructive">Delete Account</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This action cannot be undone. All your data will be permanently deleted.
+                </p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete:
+                      <br /><br />
+                      • All your interview recordings and stories
+                      <br />
+                      • Your account settings and preferences
+                      <br />
+                      • All associated data
+                      <br /><br />
+                      This action is permanent and cannot be reversed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Yes, Delete My Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </CardContent>
